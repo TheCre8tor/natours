@@ -2,8 +2,6 @@ const fs = require('fs');
 const Tour = require('./../models/tourModel');
 
 // READ LOCAL FILES  -->
-const data = fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`, 'utf-8');
-const tours = JSON.parse(data);
 
 exports.checkID = (req, res, next, value) => {
     console.log(`Tour id is: ${value}`);
