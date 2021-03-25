@@ -1,5 +1,6 @@
 const Tour = require('./../models/tourModel');
 
+// MONGO
 exports.getAllTours = async (req, res) => {
     try {
         const tours = await Tour.find();
