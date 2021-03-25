@@ -1,6 +1,6 @@
 const Tour = require('./../models/tourModel');
 
-// Laster
+// This is git problems
 exports.getAllTours = async (req, res) => {
     try {
         const tours = await Tour.find();
