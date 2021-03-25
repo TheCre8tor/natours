@@ -59,32 +59,41 @@ exports.createTour = async (req, res) => {
     }
 };
 
-exports.updateTour = (req, res) => {
-    // const tour = tours.find(item => item.id === parseInt(req.params.id));
-    //
-    // tour.name = req.body.name;
-    //
-    // fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`, JSON.stringify(tours), err => {
-    //     res.status(200).json({
-    //         status: 'success',
-    //         tour: tour
-    //     });
-    // });
+exports.updateTour = async (req, res) => {
+    try {
+        const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+            new: true,
+            runValidators: true
+        });
+
+        res.status(200).json({
+            status: 'success',
+            items: '',
+            data: {
+                tour: tour
+            }
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: 'failed',
+            message: err.message
+        });
+    }
 };
 
-exports.deleteTour = (req, res) => {
-    // const tour = tours.find(items => items.id === parseInt(req.params.id));
-    //
-    // const idx = tours.indexOf(tour);
-    // tours.splice(idx, 1);
-    //
-    // fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`, JSON.stringify(tours), err => {
-    //     res.status(200).json({
-    //         status: 'success',
-    //         message: 'Item deleted successfully',
-    //         data: {
-    //             tour: tour
-    //         }
-    //     });
-    // });
+exports.deleteTour = async (req, res) => {
+    try {
+        const tour = await Tour.findByIdAndDelete(req.params.id);
+        // const tour = await Tour.findOneAndDelete({ _id: req.params.id });
+
+        res.status(204).json({
+            status: 'success',
+            message: null
+        });
+    } catch (err) {
+        res.status(400).json({
+            status: 'failed',
+            message: err.message
+        });
+    }
 };
