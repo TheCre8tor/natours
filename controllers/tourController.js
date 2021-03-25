@@ -1,6 +1,5 @@
 const Tour = require('./../models/tourModel');
 
-// Basic CRUD with MONGO DB
 exports.getAllTours = async (req, res) => {
     try {
         const tours = await Tour.find();
