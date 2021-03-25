@@ -1,6 +1,6 @@
 const Tour = require('./../models/tourModel');
 
-// MONGO
+// Laster
 exports.getAllTours = async (req, res) => {
     try {
         const tours = await Tour.find();
