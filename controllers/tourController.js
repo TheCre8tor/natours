@@ -3,8 +3,20 @@ const Tour = require('./../models/tourModel');
 // This is git problems
 exports.getAllTours = async (req, res) => {
     try {
-        const tours = await Tour.find();
+        // 1. BUILD QUERY  -->  Implementing Pagination and Sorting
+        const queryObj = { ...req.query };
+        const excludedFields = ['page', 'sort', 'limit', 'fields'];
+        excludedFields.forEach(item => delete queryObj[item]);
+        // console.log(req.query, queryObj);
 
+        // 2. EXECUTE QUERY
+        // const tours = await Tour.find();  -->  Get data's without querying
+        const tours = await Tour.find(queryObj); //  -->  Get data's with querying
+
+        // <!-- Another way of querying data ->
+        // const tours = await Tour.find().where('duration').equals(5).where('difficulty').equals('easy');
+
+        // 3. SEND RESPONSE
         res.status(200).json({
             status: 'success',
             items: tours.length,
