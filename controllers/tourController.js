@@ -21,10 +21,10 @@ exports.getAllTours = async (req, res) => {
             const sortBy = req.query.sort.split(',').join(' ');
             query = query.sort(sortBy);
         } else {
-            query = query.sort('-createdAt');
+            // query = query.sort('-createdAt');
         }
 
-        // 3. FIELD LIMITING  || PROJECTING -->
+        // 3. FIELD-LIMITING || PROJECTING -->
         if (req.query.fields) {
             const fields = req.query.fields.split(',').join(' ');
             query = query.select(fields);
@@ -33,10 +33,22 @@ exports.getAllTours = async (req, res) => {
             // The - excluded this __v item
         }
 
-        // 4. EXECUTE QUERY -->
+        // 4. PAGINATION -->
+        if (req.query.page || req.query.limit) {
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 100;
+            const skip = (page - 1) * limit;
+
+            query = query.limit(limit).skip(skip);
+
+            const numTours = await Tour.countDocuments();
+            if (skip >= numTours) throw new Error('This page does not exist!');
+        }
+
+        // 5. EXECUTE QUERY -->
         const tours = await query;
 
-        // 5. SEND RESPONSE -->
+        // 6. SEND RESPONSE -->
         res.status(200).json({
             status: 'success',
             items: tours.length,
