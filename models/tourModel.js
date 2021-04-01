@@ -56,7 +56,11 @@ const tourSchema = new mongoose.Schema(
             default: Date.now(),
             select: false // if false, this will hide the field in response
         },
-        startDates: [Date]
+        startDates: [Date],
+        secretTour: {
+            type: Boolean,
+            default: false
+        }
     },
     {
         // Enabling Virtual Properties -->
@@ -70,7 +74,7 @@ tourSchema.virtual('durationWeeks').get(function () {
     return this.duration / 7;
 });
 
-// DOCUMENT MIDDLEWARE: Runs before .save() and .create() and not .insertMany()
+// DOCUMENT MIDDLEWARE: --> Runs before .save() and .create() and not .insertMany()
 tourSchema.pre('save', function (next) {
     this['slug'] = slugify(this.name, { lower: true });
     next();
@@ -80,11 +84,26 @@ tourSchema.pre('save', function (next) {
 //     console.log('We can have multiple pre() middleware');
 //     next();
 // });
-//
+
 // tourSchema.post('save', function (doc, next) {
 //     console.log(doc);
 //     next();
 // });
+
+// QUERY MIDDLEWARE: --> Runs before any .find() query is executed
+// This Regex finds everything that start with find /^find/
+tourSchema.pre(/^find/, function (next) {
+    this.find({ secretTour: { $ne: true } });
+
+    this.start = Date.now();
+    next();
+});
+
+// This middleware is going to run after the query as already executed
+tourSchema.post(/^find/, function (docs, next) {
+    console.log(`Query took ${Date.now() - this.start} milliseconds!`);
+    next();
+});
 
 // DATABASE MODEL -->
 const Tour = mongoose.model('Tour', tourSchema);
