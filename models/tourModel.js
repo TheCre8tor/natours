@@ -74,7 +74,7 @@ tourSchema.virtual('durationWeeks').get(function () {
     return this.duration / 7;
 });
 
-// DOCUMENT MIDDLEWARE: --> Runs before .save() and .create() and not .insertMany()
+// 1. DOCUMENT MIDDLEWARE: --> Runs before .save() and .create() and not .insertMany()
 tourSchema.pre('save', function (next) {
     this['slug'] = slugify(this.name, { lower: true });
     next();
@@ -90,7 +90,7 @@ tourSchema.pre('save', function (next) {
 //     next();
 // });
 
-// QUERY MIDDLEWARE: --> Runs before any .find() query is executed
+// 2. QUERY MIDDLEWARE: --> Runs before any .find() query is executed
 // This Regex finds everything that start with find /^find/
 tourSchema.pre(/^find/, function (next) {
     this.find({ secretTour: { $ne: true } });
@@ -105,6 +105,12 @@ tourSchema.post(/^find/, function (docs, next) {
     next();
 });
 
+// AGGREGATION MIDDLEWARE -->
+tourSchema.pre('aggregate', function (next) {
+    this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+
+    next();
+});
 // DATABASE MODEL -->
 const Tour = mongoose.model('Tour', tourSchema);
 
