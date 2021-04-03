@@ -4,7 +4,8 @@
     "description": "Learning node, express and mongoDB",
     "main": "app.js",
     "scripts": {
-        "start": "nodemon server.js"
+        "start": "nodemon server.js",
+        "debug": "ndb server.js"
     },
     "keywords": [],
     "author": "",
@@ -14,6 +15,7 @@
         "express": "^4.17.1",
         "mongoose": "^5.12.2",
         "morgan": "^1.10.0",
-        "slugify": "^1.5.0"
+        "slugify": "^1.5.0",
+        "validator": "^13.5.2"
     }
 }
