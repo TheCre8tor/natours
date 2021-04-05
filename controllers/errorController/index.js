@@ -1,8 +1,20 @@
 const AppError = require('./../../utils/appErrors');
 
 const handleCastErrorDB = error => {
-    // console.log(err);
     let message = `Invalid ${error.path}: ${error.value}`;
+    return new AppError(message, 400);
+};
+
+const handleDuplicateFieldsDB = err => {
+    const value = err.errmsg.match(/(["'])(\\?.)*?\1/);
+    let message = `Duplicate field value: ${value[0]}. Please use another value!`;
+    return new AppError(message, 400);
+};
+
+const handleValidationErrorDB = err => {
+    const errors = Object.values(err.errors).map(el => el.message);
+
+    const message = `Invalid input data. ${errors.join('. ')}`;
     return new AppError(message, 400);
 };
 
@@ -46,12 +58,17 @@ module.exports = (err, req, res, next) => {
          * but in this case we can't because we are not receiving
          * the name property after we perform the shallow copy.
          * so I mutate the object directly...  */
-        // let error = { ...err }
+        // let error = { ...err };
 
         if (err.name === 'CastError') {
             err = handleCastErrorDB(err);
         }
-
+        if (err.code === 11000) {
+            err = handleDuplicateFieldsDB(err);
+        }
+        if (err.name === 'ValidationError') {
+            err = handleValidationErrorDB(err);
+        }
         sendErrorProd(err, res);
     }
 
