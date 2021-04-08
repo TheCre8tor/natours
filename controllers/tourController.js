@@ -109,6 +109,13 @@ exports.getTourStats = catchAsync(async (req, res, next) => {
         //     $match: { _id: { $ne: 'EASY' } }
         // }
     ]);
+
+    res.status(200).json({
+        status: 'success',
+        data: {
+            stats
+        }
+    });
 });
 
 exports.getMonthlyPlan = catchAsync(async (req, res, next) => {
