@@ -12,10 +12,11 @@ const signToken = id => {
 
 // Signup Controller Logic -->
 exports.signup = catchAsync(async (req, res, next) => {
-    const { name, email, password, confirmPassword, passwordChangedAt } = req.body;
+    const { name, email, role, password, confirmPassword, passwordChangedAt } = req.body;
     const newUser = await User.create({
         name: name,
         email: email,
+        role: role,
         password: password,
         confirmPassword: confirmPassword,
         passwordChangedAt: passwordChangedAt
@@ -91,3 +92,15 @@ exports.protect = catchAsync(async (req, res, next) => {
     req.user = isUserInDB;
     next();
 });
+
+// Authorization Route Logic -->
+exports.restrictTo = (...roles) => {
+    return (req, res, next) => {
+        // granted roles ['admin', 'lead-guide']
+        // The current user is added to the req pipeline from protect route function
+        if (!roles.includes(req.user.role)) {
+            return next(new AppError('You do not have permission to perform this action', 403));
+        }
+        next();
+    };
+};
