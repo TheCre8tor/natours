@@ -12,6 +12,35 @@ const signToken = id => {
     });
 };
 
+const sendCookie = (res, token) => {
+    const cookieOptions = {
+        // Hours: 24 | Minutes: 60 | Seconds: 60 | Milliseconds: 1000
+        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+        httpOnly: true
+    };
+    if (process.env.NODE_ENV === 'production') {
+        // This option is going to be set only on production
+        cookieOptions.secure = true;
+    }
+    return res.cookie('jwt', token, cookieOptions);
+};
+
+const createSendToken = (user, statusCode, res) => {
+    const token = signToken(user.id);
+    sendCookie(res, token);
+
+    // Remove password from output
+    user.password = undefined;
+
+    res.status(statusCode).json({
+        status: 'success',
+        token: token,
+        data: {
+            user: user
+        }
+    });
+};
+
 // Signup Controller Logic -->
 exports.signup = catchAsync(async (req, res, next) => {
     const { name, email, role, password, confirmPassword, passwordChangedAt } = req.body;
@@ -24,15 +53,7 @@ exports.signup = catchAsync(async (req, res, next) => {
         passwordChangedAt: passwordChangedAt
     });
 
-    const token = signToken(newUser._id);
-
-    res.status(201).json({
-        status: 'success',
-        token: token,
-        data: {
-            user: newUser
-        }
-    });
+    createSendToken(newUser, 201, res);
 });
 
 // Login Controller Logic -->
@@ -53,12 +74,14 @@ exports.login = catchAsync(async (req, res, next) => {
     }
 
     const token = signToken(user._id);
+    sendCookie(res, token);
 
     // 3) If everything is ok, send token to client
-    res.status(200).json({
-        status: 'success',
-        token: token
-    });
+    createSendToken(user, 200, res);
+    // res.status(200).json({
+    //     status: 'success',
+    //     token: token
+    // });
 });
 
 // Protected Routes Controller Logic -->
@@ -79,7 +102,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
     // <!-- 3) Check if user still exists -->
-    const isUserInDB = await User.findById(decoded.id);
+    const isUserInDB = await User.findById(decoded.id).select('+password');
 
     if (!isUserInDB) {
         return next(new AppError('The user belonging to this token does no longer exist.', 401));
@@ -173,8 +196,37 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
     // 4) Log the user in, send JWT
     const token = signToken(user._id);
+    sendCookie(res, token);
+
     res.status(200).json({
         status: 'success',
         token: token
+    });
+});
+
+// Logged in User - Change Password Controller Logic -->
+exports.updatePassword = catchAsync(async (req, res, next) => {
+    const { currentPassword, password, confirmPassword } = req.body;
+
+    // 1) Get user from collection
+    const user = await User.findById(req.user.id).select('+password');
+
+    // 2) Check if POSTed current password is correct
+    if (!(await user.correctPassword(currentPassword, user.password))) {
+        return next(new AppError('Your current password is wrong.', 400));
+    }
+
+    // 3) If correct, update password
+    user.password = password;
+    user.confirmPassword = confirmPassword;
+    await user.save();
+
+    // 4) Log user in, send JWT
+    const newToken = signToken(user._id);
+    sendCookie(res, newToken);
+
+    res.status(200).json({
+        status: 'success',
+        token: newToken
     });
 });

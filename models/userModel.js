@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema({
         enum: ['user', 'guide', 'lead-guide', 'admin'],
         default: 'user'
     },
+    active: {
+        type: Boolean,
+        default: true,
+        select: false
+    },
     password: {
         type: String,
         required: [true, 'Please provide a password'],
@@ -71,6 +76,13 @@ userSchema.pre('save', function (next) {
     next();
 });
 
+// QUERY MIDDLEWARE  |  This temporarily delete user -->
+userSchema.pre(/^find/, function (next) {
+    // This points to the current query
+    this.find({ active: { $ne: false } });
+    next();
+});
+
 // <!-- Password Comparison -->
 userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
     return await bcrypt.compare(candidatePassword, userPassword);
@@ -89,6 +101,7 @@ userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
     return false;
 };
 
+// <!-- Create Password Reset Token -->
 userSchema.methods.createPasswordResetToken = function () {
     const resetToken = crypto.randomBytes(32).toString('hex');
     this['passwordResetToken'] = crypto.createHash('sha256').update(resetToken).digest('hex');
