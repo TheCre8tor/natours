@@ -123,6 +123,13 @@ tourSchema.virtual('durationWeeks').get(function () {
     return this.duration / 7;
 });
 
+// Virtual Populate --> connecting reviews to tour
+tourSchema.virtual('reviews', {
+    ref: 'Review',
+    foreignField: 'tour',
+    localField: '_id'
+});
+
 // 1. DOCUMENT MIDDLEWARE: --> Runs before .save() and .create() and not for update
 tourSchema.pre('save', function (next) {
     this['slug'] = slugify(this.name, { lower: true });
