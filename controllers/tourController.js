@@ -2,6 +2,7 @@ const Tour = require('./../models/tourModel');
 const APIFeatures = require('./../utils/apiFeatures');
 const AppError = require('./../utils/appErrors');
 const catchAsync = require('./../utils/catchAsync');
+const factory = require('./handlerFactory');
 
 // <!-- Aliasing Middleware Function -->
 exports.aliasTopTours = (req, res, next) => {
@@ -70,19 +71,20 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     });
 });
 
-exports.deleteTour = catchAsync(async (req, res, next) => {
-    const tour = await Tour.findByIdAndDelete(req.params.id);
-    // const tour = await Tour.findOneAndDelete({ _id: req.params.id });
-
-    if (!tour) {
-        return next(new AppError('No tour found with that ID', 404));
-    }
-
-    res.status(204).json({
-        status: 'success',
-        message: null
-    });
-});
+exports.deleteTour = factory.deleteOne(Tour);
+// exports.deleteTour = catchAsync(async (req, res, next) => {
+//     const tour = await Tour.findByIdAndDelete(req.params.id);
+//     // const tour = await Tour.findOneAndDelete({ _id: req.params.id });
+//
+//     if (!tour) {
+//         return next(new AppError('No tour found with that ID', 404));
+//     }
+//
+//     res.status(204).json({
+//         status: 'success',
+//         message: null
+//     });
+// });
 
 //  <!-- This is used for getting result statistics -->
 exports.getTourStats = catchAsync(async (req, res, next) => {
