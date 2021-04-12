@@ -29,7 +29,7 @@ router.patch('/update-password', protect, updatePassword);
 router.patch('/update-profile', protect, updateProfile);
 router.delete('/delete-profile', protect, deleteProfile);
 
-router.route('/').get(getAllUsers).post(createUser);
+router.route('/').get(getAllUsers);
 router.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
 
 module.exports = router;

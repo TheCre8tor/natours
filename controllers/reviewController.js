@@ -19,26 +19,38 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
     });
 });
 
-exports.createReview = catchAsync(async (req, res, next) => {
-    let { user, tour, review, rating } = req.body;
+exports.setTourUserIds = (req, res, next) => {
+    let { user, tour } = req.body;
 
     // <!-- Allow nested routes -->
-    if (!tour) tour = req.params.tourId;
-    if (!user) user = req.user.id;
+    if (!tour) req.body.tour = req.params.tourId;
+    if (!user) req.body.user = req.user.id;
 
-    const newReview = await Review.create({
-        user: user,
-        tour: tour,
-        review: review,
-        rating: rating
-    });
+    next();
+};
 
-    res.status(201).json({
-        status: 'success',
-        data: {
-            review: newReview
-        }
-    });
-});
+exports.createReview = factory.createOne(Review);
+// exports.createReview = catchAsync(async (req, res, next) => {
+//     let { user, tour, review, rating } = req.body;
+//
+//     // <!-- Allow nested routes -->
+//     if (!tour) tour = req.params.tourId;
+//     if (!user) user = req.user.id;
+//
+//     const newReview = await Review.create({
+//         user: user,
+//         tour: tour,
+//         review: review,
+//         rating: rating
+//     });
+//
+//     res.status(201).json({
+//         status: 'success',
+//         data: {
+//             review: newReview
+//         }
+//     });
+// });
 
+exports.updateReview = factory.updateOne(Review);
 exports.deleteReview = factory.deleteOne(Review);
