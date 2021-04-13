@@ -3,25 +3,15 @@ const tourController = require('./../controllers/tourController');
 const reviewRouter = require('./../routes/reviewRoutes');
 const router = express.Router();
 
-const {
-    aliasTopTours,
-    getAllTours,
-    createTour,
-    getTour,
-    updateTour,
-    deleteTour,
-    getTourStats,
-    getMonthlyPlan
-} = tourController;
+const { aliasTopTours, getAllTours, createTour, getTour, updateTour, deleteTour, getTourStats, getMonthlyPlan } = tourController;
 const { protect, restrictTo } = require('./../controllers/authController');
 
 router.route('/top-five-ratings').get(aliasTopTours, getAllTours);
 router.route('/tour-stats').get(getTourStats);
-router.route('/monthly-plan/:year').get(getMonthlyPlan);
+router.route('/monthly-plan/:year').get(protect, restrictTo('admin', 'lead-guide', 'guide'), getMonthlyPlan);
 
-router.route('/').get(protect, getAllTours).post(createTour);
-router.route('/:id').get(getTour).patch(updateTour).delete(protect, restrictTo('admin', 'lead-guide'), deleteTour);
-
+router.route('/').get(getAllTours).post(protect, restrictTo('admin', 'lead-guide'), createTour);
+router.route('/:id').get(getTour).patch(protect, restrictTo('admin', 'lead-guide'), updateTour).delete(protect, restrictTo('admin', 'lead-guide'), deleteTour);
 // <!-- Nested Routes -->
 
 // POST /tour/tour:id/reviews

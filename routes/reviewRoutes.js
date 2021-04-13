@@ -5,7 +5,9 @@ const { protect, restrictTo } = require('./../controllers/authController');
 // mergeParams merge the Nested Route in Tour Route with Review Route
 const router = express.Router({ mergeParams: true });
 
-router.route('/').get(protect, getAllReviews).post(protect, restrictTo('user'), setTourUserIds, createReview);
-router.route('/:id').get(getReview).patch(updateReview).delete(deleteReview);
+router.use(protect); // This middleware protect all the routes below it generally
+
+router.route('/').get(getAllReviews).post(restrictTo('user'), setTourUserIds, createReview);
+router.route('/:id').get(getReview).patch(restrictTo('user', 'admin'), updateReview).delete(restrictTo('user', 'admin'), deleteReview);
 
 module.exports = router;

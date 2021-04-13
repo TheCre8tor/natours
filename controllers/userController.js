@@ -49,6 +49,12 @@ exports.deleteProfile = catchAsync(async (req, res, next) => {
     });
 });
 
+// Getting User Profile -->
+exports.getProfile = (req, res, next) => {
+    req.params.id = req.user.id;
+    next();
+};
+
 // Factory Functions -->
 exports.getAllUsers = factory.getAll(User);
 exports.getUser = factory.getOne(User);
