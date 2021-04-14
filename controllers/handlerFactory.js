@@ -25,6 +25,7 @@ exports.getAll = Model => {
 
         const features = new APIFeatures(Model.find(filter), req.query).filter().sort().limitFields().pagination();
         const doc = await features.query;
+        // const doc = await features.query.explain();
 
         res.status(200).json({
             status: 'success',

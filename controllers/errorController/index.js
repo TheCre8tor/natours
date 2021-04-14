@@ -62,29 +62,27 @@ module.exports = (err, req, res, next) => {
     if (process.env.NODE_ENV === 'development') {
         sendErrorDev(err, res);
     } else if (process.env.NODE_ENV === 'production') {
-        /* It is not a good idea to mutate a response directly,
-         * that's the reason why we need to have a shallow copy,
-         * but in this case we can't because we are not receiving
-         * the name property after we perform the shallow copy.
-         * so I mutate the object directly...  */
-        // let error = { ...err };
+        // I clone the err object with Object.assign(), spread operator is not showing CastErrors name.
+        let error = Object.assign(err);
+        // console.log(error.constructor.name)
+        // console.log({ error });
 
-        if (err.name === 'CastError') {
-            err = handleCastErrorDB(err);
+        if (error.name === 'CastError') {
+            error = handleCastErrorDB(error);
         }
-        if (err.code === 11000) {
-            err = handleDuplicateFieldsDB(err);
+        if (error.code === 11000) {
+            error = handleDuplicateFieldsDB(error);
         }
-        if (err.name === 'ValidationError') {
-            err = handleValidationErrorDB(err);
+        if (error.name === 'ValidationError') {
+            error = handleValidationErrorDB(error);
         }
-        if (err.name === 'JsonWebTokenError') {
-            err = handleJWTError();
+        if (error.name === 'JsonWebTokenError') {
+            error = handleJWTError();
         }
-        if (err.name === 'TokenExpiredError') {
-            err = handleJWTExpiredError();
+        if (error.name === 'TokenExpiredError') {
+            error = handleJWTExpiredError();
         }
-        sendErrorProd(err, res);
+        sendErrorProd(error, res);
     }
 
     next();
