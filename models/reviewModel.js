@@ -35,6 +35,9 @@ const reviewSchema = new mongoose.Schema(
     }
 );
 
+// This middleware restrict a user from writing two reviews and on the same tour
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 reviewSchema.pre(/^find/, function (next) {
     // this.populate({ path: 'tour', select: 'name' }).populate({ path: 'user', select: 'name photo' });
     this.populate({ path: 'user', select: 'name photo' });
@@ -78,7 +81,7 @@ reviewSchema.post('save', async function () {
     await this.constructor.calcAverageRatings(this.tour);
 });
 
-// Update & Delete Average Rating on Tour -->
+// Reflect Updated & Deleted Average Ratings on Tour -->
 reviewSchema.pre(/^findOneAnd/, async function (next) {
     this.newReview = await this.findOne();
     // console.log(this['newReview']);
