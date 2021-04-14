@@ -42,6 +42,7 @@ reviewSchema.pre(/^find/, function (next) {
 });
 
 // Calculate Average Rating on Tour -->
+// <!-- Static Methods are called on models  -->
 reviewSchema.statics.calcAverageRatings = async function (tourId) {
     // <!-- Aggregation Pipeline -->
     const stats = await this.aggregate([
@@ -57,16 +58,36 @@ reviewSchema.statics.calcAverageRatings = async function (tourId) {
         }
     ]);
     // <!-- We save the statistics to the current Tour -->
-    await Tour.findByIdAndUpdate(tourId, {
-        ratingsQuantity: stats[0].nRating,
-        ratingsAverage: stats[0].avgRating
-    });
+    if (stats.length > 0) {
+        await Tour.findByIdAndUpdate(tourId, {
+            ratingsQuantity: stats[0].nRating,
+            ratingsAverage: stats[0].avgRating
+        });
+    } else {
+        await Tour.findByIdAndUpdate(tourId, {
+            ratingsQuantity: 0,
+            ratingsAverage: 4.5
+        });
+    }
+    console.log(stats);
 };
 
 // We call the function right here -->
-reviewSchema.post('save', function () {
+reviewSchema.post('save', async function () {
     //  This points to current review
-    this.constructor.calcAverageRatings(this.tour);
+    await this.constructor.calcAverageRatings(this.tour);
+});
+
+// Update & Delete Average Rating on Tour -->
+reviewSchema.pre(/^findOneAnd/, async function (next) {
+    this.newReview = await this.findOne();
+    // console.log(this['newReview']);
+    next();
+});
+
+reviewSchema.post(/^findOneAnd/, async function (next) {
+    // this.review = await this.findOne(); does not work here, query has already been executed
+    await this['newReview'].constructor.calcAverageRatings(this['newReview'].tour);
 });
 
 const Review = mongoose.model('Review', reviewSchema);
