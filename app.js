@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
@@ -11,10 +12,19 @@ const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
+const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
 
+// Enabling PugJs View Engine -->
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
+
 // GLOBAL MIDDLEWARE  -->
+
+// <!-- Serving static files -->
+app.use(express.static(path.join(__dirname, 'public')));
+
 // 1) Set Security HTTP Headers
 app.use(helmet());
 
@@ -51,17 +61,15 @@ app.use(
     })
 );
 
-// 8) Serving static files
-app.use(express.static(`${__dirname}/public`));
-
-// 9) Custom Timestamp Middleware
+// 8) Custom Timestamp Middleware
 app.use((req, res, next) => {
     req.requestTime = new Date().toLocaleString();
 
     next();
 });
 
-// 10) ROUTER MOUNTS MIDDLEWARE  -->
+// 9) ROUTER MOUNTS MIDDLEWARE  -->
+app.use('/', viewRouter);
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
