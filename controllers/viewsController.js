@@ -15,14 +15,17 @@ exports.getOverview = catchAsync(async (req, res, next) => {
 });
 
 exports.getTour = catchAsync(async (req, res) => {
-    // Get the data, for the requested tour (including reviews and guides)
+    // 1) Get the data, for the requested tour (including reviews and guides)
     const tour = await Tour.findOne({ slug: req.params.slug }).populate({ path: 'reviews', fields: 'review rating user' });
-    console.log(tour);
-    // Build template
-    // Render template using data from step 1
+    // 2) Build template
+    // 3) Render template using data from step 1
 
+    // Response Header Fix for CSP (Content-Security-Policy)
+    const cspData =
+        "default-src 'self' https://*.mapbox.com; base-uri 'self'; block-all-mixed-content; font-src 'self' https:; frame-ancestors 'self'; img-src 'self' blob: data:; object-src 'none'; script-src 'unsafe-inline' https://cdnjs.cloudflare.com https://api.mapbox.com 'self' blob:; style-src 'self' https: 'unsafe-inline'; upgrade-insecure-requests;";
+    res.set({ 'X-XSS-Protection': '1; mode=block', 'Content-Security-Policy': cspData });
     res.status(200).render('tour', {
-        title: 'The Forest Hiker Tour',
+        title: `${tour.name} Tour`,
         tour: tour
     });
 });
