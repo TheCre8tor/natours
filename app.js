@@ -6,6 +6,9 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const csp = require('express-csp');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 const AppError = require('./utils/appErrors');
 const globalErrorHandler = require('./controllers/errorController');
@@ -14,7 +17,7 @@ const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const viewRouter = require('./routes/viewRoutes');
 
-const app = express();   
+const app = express();
 
 // Enabling PugJs View Engine -->
 app.set('view engine', 'pug');
@@ -22,11 +25,118 @@ app.set('views', path.join(__dirname, 'views'));
 
 // GLOBAL MIDDLEWARE  -->
 
+// <-- IMPLEMENT CORS -->
+// This will only work for simple request --> GET & POST
+// It set Access-Control-Allow-Origin *, by default
+app.use(cors());
+// To allow a single or specified domain -->
+// Example: Backend ->api.natours.com, Frontend -> natours.com
+/* Solution:
+   to allow the frontend only without exposing the API to the public:
+   app.use(cors({
+       origin: 'https://www.natours.com'
+   }));
+*/
+
+// This will only work for non-simple request --> PUT, PATCH & DELETE
+// --> Or request that send cookies or use non standard headers
+/* NOTE: This non-simple requests require a Pre-Flight Phase, when ever
+ * there's a non-simple request the browser would then automatically issue
+ * the Pre-Flight Phase.
+ *
+ * HOW IT WORK'S: Before the real request actually happens like a DELETE
+ * request, the browser will first create an OPTION request in other to
+ * figure out if the actually request is safe to send, then on our server
+ * we need to actually respond to the OPTION request.
+ * OPTION is really just an http method, like GET, POST...
+ *
+ * Basically, when we get one of this options request on our server, we
+ * then need to send back Access-Control-Allow-Origin header, this way the
+ * browser will then know the actual request, in this case, the DELETE
+ * request is safe to perform and then execute the DELETE request. */
+
+// Applied to all the routes -->
+app.options('*', cors());
+
+// Applied to a single/specified route -->
+// app.options('/api/v1/tours/:id', cors());
+
 // <!-- Serving static files -->
 app.use(express.static(path.join(__dirname, 'public')));
 
 // 1) Set Security HTTP Headers
 app.use(helmet());
+// <!-- Fix for CSP (Content-Security-Policy) -->
+csp.extend(app, {
+    policy: {
+        directives: {
+            'default-src': ['self'],
+            'style-src': ['self', 'unsafe-inline', 'https:'],
+            'font-src': ['self', 'https://fonts.gstatic.com'],
+            'script-src': [
+                'self',
+                'unsafe-inline',
+                'data',
+                'blob',
+                'https://js.stripe.com',
+                'https://*.mapbox.com',
+                'https://*.cloudflare.com/',
+                'https://bundle.js:8828',
+                'ws://localhost:56558/',
+                'http://127.0.0.1:*/'
+            ],
+            'worker-src': [
+                'self',
+                'unsafe-inline',
+                'data:',
+                'blob:',
+                'https://*.stripe.com',
+                'https://*.mapbox.com',
+                'https://*.cloudflare.com/',
+                'https://bundle.js:*',
+                'ws://localhost:*/',
+                'http://127.0.0.1:*/'
+            ],
+            'frame-src': [
+                'self',
+                'unsafe-inline',
+                'data:',
+                'blob:',
+                'https://*.stripe.com',
+                'https://*.mapbox.com',
+                'https://*.cloudflare.com/',
+                'https://bundle.js:*',
+                'ws://localhost:*/',
+                'http://127.0.0.1:*/'
+            ],
+            'img-src': [
+                'self',
+                'unsafe-inline',
+                'data:',
+                'blob:',
+                'https://*.stripe.com',
+                'https://*.mapbox.com',
+                'https://*.cloudflare.com/',
+                'https://bundle.js:*',
+                'ws://localhost:*/',
+                'http://127.0.0.1:*/'
+            ],
+            'connect-src': [
+                'self',
+                'unsafe-inline',
+                'data:',
+                'blob:',
+                // 'wss://<HEROKU-SUBDOMAIN>.herokuapp.com:<PORT>/',
+                'https://*.stripe.com',
+                'https://*.mapbox.com',
+                'https://*.cloudflare.com/',
+                'https://bundle.js:*',
+                'ws://localhost:*/',
+                'http://127.0.0.1:*/'
+            ]
+        }
+    }
+});
 
 // 2) Development Lodging
 if (process.env.NODE_ENV === 'development') {
@@ -45,6 +155,7 @@ app.use('/api', limiter);
 // 4) Body parser, reading data from body into req.body
 // <!-- The limit prevent data larger than 10kb -->
 app.use(express.json({ limit: '10kb' }));
+app.use(cookieParser());
 
 // 5) Data Sanitization against NoSQL Query Injection
 /* Example: By guessing the password of a user, hackers can gain access into the admin account
@@ -63,8 +174,8 @@ app.use(
 
 // 8) Custom Timestamp Middleware
 app.use((req, res, next) => {
-    req.requestTime = new Date().toLocaleString();
-
+    req.requestTime = new Date().toLocaleString(); 
+    console.log(req.cookies);
     next();
 });
 

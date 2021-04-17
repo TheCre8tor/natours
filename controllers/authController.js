@@ -70,11 +70,11 @@ exports.login = catchAsync(async (req, res, next) => {
     const user = await User.findOne({ email: email }).select('+password');
 
     if (!user || !(await user.correctPassword(password, user.password))) {
-        return next(new AppError('Incorrect email or password', 401));
+        return next(new AppError('Incorrect email or password', 400));
     }
 
-    const token = signToken(user._id);
-    sendCookie(res, token);
+    // const token = signToken(user._id);
+    // sendCookie(res, token);
 
     // 3) If everything is ok, send token to client
     createSendToken(user, 200, res);
@@ -92,10 +92,12 @@ exports.protect = catchAsync(async (req, res, next) => {
 
     if (authorization && authorization.startsWith('Bearer')) {
         token = authorization.split(' ')[1];
+    } else if (req.cookies.jwt) {
+        token = req.cookies.jwt;
     }
 
-    // <!-- 2) Verification token -->
     if (!token) {
+        // <!-- 2) Verification token -->
         return next(new AppError('You are not logged in! Please log in to get access', 401));
     }
 
