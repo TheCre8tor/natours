@@ -83,6 +83,7 @@ csp.extend(app, {
                 'https://*.cloudflare.com/',
                 'https://bundle.js:8828',
                 'ws://localhost:56558/',
+                'ws://127.0.0.1:*/',
                 'http://127.0.0.1:*/'
             ],
             'worker-src': [
@@ -95,6 +96,7 @@ csp.extend(app, {
                 'https://*.cloudflare.com/',
                 'https://bundle.js:*',
                 'ws://localhost:*/',
+                'ws://127.0.0.1:*/',
                 'http://127.0.0.1:*/'
             ],
             'frame-src': [
@@ -107,6 +109,7 @@ csp.extend(app, {
                 'https://*.cloudflare.com/',
                 'https://bundle.js:*',
                 'ws://localhost:*/',
+                'ws://127.0.0.1:*/',
                 'http://127.0.0.1:*/'
             ],
             'img-src': [
@@ -119,6 +122,7 @@ csp.extend(app, {
                 'https://*.cloudflare.com/',
                 'https://bundle.js:*',
                 'ws://localhost:*/',
+                'ws://127.0.0.1:*/',
                 'http://127.0.0.1:*/'
             ],
             'connect-src': [
@@ -132,6 +136,7 @@ csp.extend(app, {
                 'https://*.cloudflare.com/',
                 'https://bundle.js:*',
                 'ws://localhost:*/',
+                'ws://127.0.0.1:*/',
                 'http://127.0.0.1:*/'
             ]
         }
@@ -174,7 +179,7 @@ app.use(
 
 // 8) Custom Timestamp Middleware
 app.use((req, res, next) => {
-    req.requestTime = new Date().toLocaleString(); 
+    req.requestTime = new Date().toLocaleString();
     console.log(req.cookies);
     next();
 });

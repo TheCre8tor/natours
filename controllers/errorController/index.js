@@ -26,33 +26,72 @@ const handleJWTExpiredError = () => {
     return new AppError('Your token has expired! Please log in again.', 401);
 };
 
-const sendErrorDev = (error, res) => {
-    res.status(error.statusCode).json({
-        status: error.status,
-        error: error,
-        message: error.message,
-        stack: error.stack
+const sendErrorDev = (error, req, res) => {
+    // A) API
+    if (req.originalUrl.startsWith('/api')) {
+        return res.status(error.statusCode).json({
+            status: error.status,
+            error: error,
+            message: error.message,
+            stack: error.stack
+        });
+    }
+
+    // B) RENDERED WEBSITE
+    console.log(error);
+    // This render a Pug Error Page -->
+    return res.status(error.statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: error.message
     });
 };
 
-const sendErrorProd = (error, res) => {
-    if (error.isOperational) {
-        // Operational, trusted errors: send message to client
-        res.status(error.statusCode).json({
-            status: error.status,
-            message: error.message
-        });
-    } else {
-        //  Programming or other unknown errors: don't leak error details
+const sendErrorProd = (error, req, res) => {
+    // A) API
+    if (req.originalUrl.startsWith('/api')) {
+        /* A) Operational, trusted errors:
+         * send message to client ----- */
+        if (error.isOperational) {
+            return res.status(error.statusCode).json({
+                status: error.status,
+                message: error.message
+            });
+        }
+
+        /* B) Programming or other unknown ------
+         * errors: don't leak error details */
+
         // 1) Log Error --> console.error('Error', error);
         console.log(error);
 
         // 2) Send generic error
-        res.status(500).json({
+        return res.status(500).json({
             status: 'error',
             message: 'Something went very wrong!'
         });
     }
+
+    // B) RENDERED WEBSITE
+    /* A) Operational, trusted errors:
+     * send message to client ----- */
+    if (error.isOperational) {
+        return res.status(error.statusCode).render('error', {
+            title: 'Something went wrong!',
+            msg: error.message
+        });
+    }
+
+    /* B) Programming or other unknown ------
+     * errors: don't leak error details */
+
+    // 1) Log Error --> console.error('Error', error);
+    console.log(error);
+
+    // 2) Send generic error
+    return res.status(error.statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: 'Please try again later.'
+    });
 };
 
 module.exports = (err, req, res, next) => {
@@ -60,7 +99,7 @@ module.exports = (err, req, res, next) => {
     err.status = err.status || 'errors';
 
     if (process.env.NODE_ENV === 'development') {
-        sendErrorDev(err, res);
+        sendErrorDev(err, req, res);
     } else if (process.env.NODE_ENV === 'production') {
         // I clone the err object with Object.assign(), spread operator is not showing CastErrors name.
         let error = Object.assign(err);
@@ -82,7 +121,7 @@ module.exports = (err, req, res, next) => {
         if (error.name === 'TokenExpiredError') {
             error = handleJWTExpiredError();
         }
-        sendErrorProd(error, res);
+        sendErrorProd(error, req, res);
     }
 
     next();
