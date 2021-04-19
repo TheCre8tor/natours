@@ -1,0 +1,55 @@
+extends base
+
+mixin navItem(link, text, icon, active)
+    li(class=`${active ? 'side-nav--active' : ''}`)
+        a(href=`${link}`)
+            svg
+                use(xlink:href=`img/icons.svg#icon-${icon}`)
+            | #{text}
+
+block content
+    main.main
+        div.user-view
+            nav.user-view__menu
+                ul.side-nav
+                    each item in [{name : 'Settings', url: '#', icon: 'settings', active: true}, {name : 'My bookings', url: '#', icon: 'briefcase', active: false}, {name : 'My reviews', url: '#', icon: 'star', active: false}, {name : 'Billing', url: '#', icon: 'credit-card', active: false} ]
+                        +navItem(item.url, item.name, item.icon, item.active)
+
+                - if (currentUser.role === 'admin')
+                    div.admin-nav
+                        h5.admin-nav__heading Admin
+                        ul.side-nav
+                            each item in [{name : 'Manage tours', url: '#', icon: 'map', active: false}, {name : 'Manage users', url: '#', icon: 'users', active: false}, {name : 'Manage reviews', url: '#', icon: 'star', active: false}, {name : 'Manage bookings', url: '#', icon: 'briefcase', active: false} ]
+                                +navItem(item.url, item.name, item.icon, item.active)
+
+
+            div.user-view__content
+                div.user-view__form-container
+                    h2.heading-secondary.ma-bt-md Your account settings
+                    form.form.form-user-data
+                        div.form__group
+                            label.form__label(for='name') Name
+                            input#name.form__input(type='text', value=`${currentUser.name}`, required)
+                        div.form__group.ma-bt-md
+                            label.form__label(for='email') Email address
+                            input#email.form__input(type='email', value=`${currentUser.email}`, required)
+                        div.form__group.form__photo-upload
+                            img.form__user-photo(src=`/img/users/${currentUser.photo}`, alt='User photo')
+                            a.btn-text(href='') Choose new photo
+                        div.form__group.right
+                            button.btn.btn--small.btn--green Save settings
+                div.line &nbsp;
+                div.user-view__form-container
+                    h2.heading-secondary.ma-bt-md Password change
+                    form.form.form-user-settings
+                        div.form__group
+                            label.form__label(for='password-current') Current password
+                            input#password-current.form__input(type='password', placeholder='••••••••', required, minlength='8')
+                        div.form__group
+                            label.form__label(for='password') New password
+                            input#password.form__input(type='password', placeholder='••••••••', required, minlength='8')
+                        div.form__group.ma-bt-lg
+                            label.form__label(for='password-confirm') Confirm password
+                            input#password-confirm.form__input(type='password', placeholder='••••••••', required, minlength='8')
+                        div.form__group.right
+                            button.btn.btn--small.btn--green Save password

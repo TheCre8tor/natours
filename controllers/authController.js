@@ -131,10 +131,11 @@ exports.protect = catchAsync(async (req, res, next) => {
 
     // GRANT ACCESS TO PROTECTED ROUTE -->
     req.user = isUserInDB;
+    res.locals.currentUser = isUserInDB; // For RENDERED WEBSITE
     next();
 });
 
-// Only for rendered pages, no errors
+// Only for RENDERED WEBSITE, no errors
 exports.isLoggedIn = async (req, res, next) => {
     if (req.cookies.jwt) {
         try {

@@ -1,12 +1,13 @@
 const express = require('express');
-const { isLoggedIn } = require('./../controllers/authController');
-const { getOverview, getTour, getLoginForm } = require('./../controllers/viewsController');
+const { isLoggedIn, protect } = require('./../controllers/authController');
+const { getOverview, getTour, getLoginForm, getUserProfile } = require('./../controllers/viewsController');
 const router = express.Router();
 
-router.use(isLoggedIn);
+router.get('/', isLoggedIn, getOverview);
+router.get('/tour/:slug', isLoggedIn, getTour);
+router.get('/login', isLoggedIn, getLoginForm);
 
-router.get('/', getOverview);
-router.get('/tour/:slug', getTour);
-router.get('/login', getLoginForm);
+// Protected Routes -->
+router.get('/profile', protect, getUserProfile);
 
 module.exports = router;

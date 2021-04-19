@@ -8,7 +8,7 @@ header.header
     nav.nav.nav--user
         if currentUser
             a.nav__el.nav__el--logout Log out
-            a.nav__el(href='#')
+            a.nav__el(href='/profile')
                 img.nav__user-img(src=`/img/users/${currentUser.photo}` alt=`Photo of ${currentUser.name}`)
                 span= currentUser.name.split(' ')[0]
         else
