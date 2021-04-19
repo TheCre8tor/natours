@@ -160,6 +160,8 @@ app.use('/api', limiter);
 // 4) Body parser, reading data from body into req.body
 // <!-- The limit prevent data larger than 10kb -->
 app.use(express.json({ limit: '10kb' }));
+// The urlencoded middleware help encode the html form data | RENDERED WEBSITE -->
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
 // 5) Data Sanitization against NoSQL Query Injection
