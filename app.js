@@ -182,7 +182,7 @@ app.use(
 // 8) Custom Timestamp Middleware
 app.use((req, res, next) => {
     req.requestTime = new Date().toLocaleString();
-    console.log(req.cookies);
+    // console.log(req.cookies);
     next();
 });
 

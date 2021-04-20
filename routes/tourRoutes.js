@@ -3,7 +3,20 @@ const tourController = require('./../controllers/tourController');
 const reviewRouter = require('./../routes/reviewRoutes');
 const router = express.Router();
 
-const { aliasTopTours, getAllTours, createTour, getTour, updateTour, deleteTour, getTourStats, getMonthlyPlan, getToursWithin, getDistances } = tourController;
+const {
+    aliasTopTours,
+    getAllTours,
+    createTour,
+    getTour,
+    updateTour,
+    deleteTour,
+    getTourStats,
+    getMonthlyPlan,
+    getToursWithin,
+    getDistances,
+    uploadTourImages,
+    resizeTourImages
+} = tourController;
 const { protect, restrictTo } = require('./../controllers/authController');
 
 router.route('/top-five-ratings').get(aliasTopTours, getAllTours);
@@ -17,7 +30,11 @@ router.route('/tours-within/:distance/center/:latlng/unit/:unit').get(getToursWi
 // Using Query Strings --> /tours-within?distance=233&center=-40,45&unit=mi
 
 router.route('/').get(getAllTours).post(protect, restrictTo('admin', 'lead-guide'), createTour);
-router.route('/:id').get(getTour).patch(protect, restrictTo('admin', 'lead-guide'), updateTour).delete(protect, restrictTo('admin', 'lead-guide'), deleteTour);
+router
+    .route('/:id')
+    .get(getTour)
+    .patch(protect, restrictTo('admin', 'lead-guide'), uploadTourImages, resizeTourImages, updateTour)
+    .delete(protect, restrictTo('admin', 'lead-guide'), deleteTour);
 // <!-- Nested Routes -->
 
 // POST /tour/tour:id/reviews

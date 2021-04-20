@@ -2,6 +2,24 @@ const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appErrors');
 const factory = require('./handlerFactory');
+const { upload } = require('./../utils/multerConfig');
+
+// --------- # ----------##########
+
+// Image Resize And Manipulation Logic -->
+
+// upload.single('image'); // For single image file.
+// upload.array('images', 5); // When the is multiple images with the same name
+// For mixed images -->
+exports.uploadTourImages = upload.fields([
+    { name: 'imageCover', maxCount: 1 },
+    { name: 'images', maxCount: 3 }
+]);
+
+exports.resizeTourImages = (req, res, next) => {
+    console.log(req.files);
+    next();
+};
 
 // <!-- Aliasing Middleware Function -->
 exports.aliasTopTours = (req, res, next) => {

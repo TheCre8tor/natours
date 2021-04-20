@@ -1,7 +1,30 @@
+const sharp = require('sharp');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appErrors');
 const factory = require('./handlerFactory');
+const { upload } = require('./../utils/multerConfig');
+
+// --------- # ----------##########
+
+exports.uploadUserPhoto = upload.single('photo');
+
+// Image Resize And Manipulation Logic -->
+exports.resizeUserPhoto = async (req, res, next) => {
+    if (!req.file) return next();
+
+    req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+    // Image Processing -->
+    await sharp(req.file.buffer)
+        .resize(500, 500)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/img/users/${req.file.filename}`);
+
+    next();
+};
+
+// --------- # ----------##########
 
 const filterObj = (obj, ...allowedFields) => {
     const newObj = {};
@@ -15,6 +38,8 @@ const filterObj = (obj, ...allowedFields) => {
 
 // Update Current User Data Except Password -->
 exports.updateProfile = catchAsync(async (req, res, next) => {
+    // console.log(req.file);
+
     // 1) Create error if user POST password data
     const { password, confirmPassword } = req.body;
     if (password || confirmPassword) {
@@ -23,6 +48,10 @@ exports.updateProfile = catchAsync(async (req, res, next) => {
 
     // 2) Filtered out unwanted fields names that are not allowed to be updated
     const filteredBody = filterObj(req.body, 'name', 'email');
+    if (req.file) {
+        // We added a photo data into the filteredBody and assign the value of req.file.filename
+        filteredBody.photo = req.file.filename;
+    }
 
     // 3) Update user document
     const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
@@ -60,3 +89,5 @@ exports.getAllUsers = factory.getAll(User);
 exports.getUser = factory.getOne(User);
 exports.updateUser = factory.updateOne(User); // --> Do NOT update passwords with this!
 exports.deleteUser = factory.deleteOne(User);
+
+// --------- # ----------##########

@@ -1,5 +1,15 @@
 const express = require('express');
-const { getAllUsers, getUser, updateUser, deleteUser, getProfile, updateProfile, deleteProfile } = require('./../controllers/userController');
+const {
+    getAllUsers,
+    getUser,
+    updateUser,
+    deleteUser,
+    getProfile,
+    updateProfile,
+    deleteProfile,
+    uploadUserPhoto,
+    resizeUserPhoto
+} = require('./../controllers/userController');
 const { signup, login, logout, protect, forgotPassword, resetPassword, updatePassword, restrictTo } = require('./../controllers/authController');
 
 const router = express.Router();
@@ -16,7 +26,7 @@ router.use(protect); // This middleware protect all the routes below it generall
 
 router.patch('/update-password', updatePassword);
 router.get('/profile', getProfile, getUser);
-router.patch('/update-profile', updateProfile);
+router.patch('/update-profile', uploadUserPhoto, resizeUserPhoto, updateProfile);
 router.delete('/delete-profile', deleteProfile);
 
 /* This middleware protect all the routes
