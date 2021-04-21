@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appErrors');
-const sendEmail = require('./../utils/email');
+const Email = require('./../utils/email');
 
 const signToken = id => {
     return jwt.sign({ id: id }, process.env.JWT_SECRET, {
@@ -45,16 +45,14 @@ const createSendToken = (user, statusCode, res) => {
 
 // Signup Controller Logic -->
 exports.signup = catchAsync(async (req, res, next) => {
-    const { name, email, role, password, confirmPassword, passwordChangedAt } = req.body;
-    const newUser = await User.create({
-        name: name,
-        email: email,
-        role: role,
-        password: password,
-        confirmPassword: confirmPassword,
-        passwordChangedAt: passwordChangedAt
-    });
+    const newUser = await User.create(req.body);
 
+    // Sending a welcome email -->
+    const url = `${req.protocol}://${req.get('host')}/profile`;
+    console.log(url);
+    /* We await so that it only move on to the next line
+     * of code after the email as been sent! --> */
+    await new Email(newUser, url).sendWelcome();
     createSendToken(newUser, 201, res);
 });
 
@@ -189,16 +187,11 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
     const resetToken = user.createPasswordResetToken();
     await user.save({ validateBeforeSave: false });
 
-    // 3) Send it to user's email
-    const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/reset-password/${resetToken}`;
-    const message = `Forgot your password? Submit a PATCH request with your new password and passwordConfirm to ${resetURL}.\nIf you didn't forget your password, please ignore this email`;
-
     try {
-        await sendEmail({
-            email: user.email,
-            subject: 'Your password reset token (valid for 10min).',
-            message: message
-        });
+        // 3) Send it to user's email
+        const resetURL = `${req.protocol}://${req.get('host')}/api/v1/users/reset-password/${resetToken}`;
+        // Send Message to client -->
+        await new Email(user, resetURL).sendPasswordReset();
 
         res.status(200).json({
             status: 'success',

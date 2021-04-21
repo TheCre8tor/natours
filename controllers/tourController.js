@@ -1,3 +1,4 @@
+const sharp = require('sharp');
 const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appErrors');
@@ -16,10 +17,40 @@ exports.uploadTourImages = upload.fields([
     { name: 'images', maxCount: 3 }
 ]);
 
-exports.resizeTourImages = (req, res, next) => {
-    console.log(req.files);
+exports.resizeTourImages = catchAsync(async (req, res, next) => {
+    // console.log(req.files);
+
+    if (!req.files.imageCover || !req.files.images) return next();
+
+    // 1) Cover Image
+    const imageCoverFilename = `tour-${req.params.id}-${Date.now()}-cover.jpeg`;
+    await sharp(req.files.imageCover[0].buffer)
+        .resize(2000, 1333)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/img/tours/${imageCoverFilename}`);
+
+    // Add Filename to The Database -->
+    req.body.imageCover = imageCoverFilename;
+
+    // 2) Images
+    req.body.images = [];
+    await Promise.all(
+        req.files.images.map(async (file, idx) => {
+            const filename = `tour-${req.params.id}-${Date.now()}-${idx + 1}.jpeg`;
+            await sharp(file.buffer)
+                .resize(2000, 1333)
+                .toFormat('jpeg')
+                .jpeg({ quality: 90 })
+                .toFile(`public/img/tours/${filename}`);
+
+            // We pushed the image names into [ req.body.images ] -->
+            req.body.images.push(filename);
+        })
+    );
+
     next();
-};
+});
 
 // <!-- Aliasing Middleware Function -->
 exports.aliasTopTours = (req, res, next) => {

@@ -57,7 +57,7 @@ const userSchema = new mongoose.Schema({
 
 // PASSWORD ENCRYPTION MANAGEMENT -->
 userSchema.pre('save', async function (next) {
-    // <!-- Only run this function if password was actually modified -->
+    // <!-- Only run this function, if password was actually modified -->
     if (!this.isModified('password')) {
         return next();
     }
@@ -109,7 +109,7 @@ userSchema.methods.createPasswordResetToken = function () {
     const resetToken = crypto.randomBytes(32).toString('hex');
     this['passwordResetToken'] = crypto.createHash('sha256').update(resetToken).digest('hex');
 
-    console.log({ resetToken }, this['passwordResetToken']);
+    // console.log({ resetToken }, this['passwordResetToken']);
 
     // this['passwordResetExpires'] = Date.now() + min * sec * milliseconds;
     this['passwordResetExpires'] = Date.now() + 10 * 60 * 1000;
