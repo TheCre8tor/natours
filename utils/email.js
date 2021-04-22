@@ -11,12 +11,20 @@ class Email {
     }
 
     newTransport() {
+        // PRODUCTION EMAIL TRANSPORT -->
         if (process.env.NODE_ENV === 'production') {
             // SENGRID MAIL SERVICE -->
-            return 1;
+            return nodemailer.createTransport({
+                service: 'SendGrid',
+                auth: {
+                    user: process.env.SENDGRID_USERNAME,
+                    pass: process.env.SENDGRID_PASSWORD
+                }
+            });
         }
 
         // 1) Create a transporter
+        // DEVELOPMENT EMAIL TRANSPORT -->
         return nodemailer.createTransport({
             host: process.env.EMAIL_HOST,
             port: process.env.EMAIL_PORT,
