@@ -79,7 +79,7 @@ csp.extend(app, {
                 'unsafe-inline',
                 'data',
                 'blob',
-                'https://js.stripe.com',
+                'https://*.stripe.com',
                 'https://*.mapbox.com',
                 'https://*.cloudflare.com/',
                 'https://bundle.js:8828',
@@ -140,6 +140,9 @@ csp.extend(app, {
                 'ws://127.0.0.1:*/',
                 'http://127.0.0.1:*/'
             ]
+        },
+        featurePolicy: {
+            'allow-list': ['*']
         }
     }
 });
