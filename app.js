@@ -9,6 +9,7 @@ const hpp = require('hpp');
 const csp = require('express-csp');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 
 const AppError = require('./utils/appErrors');
 const globalErrorHandler = require('./controllers/errorController');
@@ -182,6 +183,9 @@ app.use(
         whitelist: ['duration', 'ratingsAverage', 'ratingsQuantity', 'maxGroupSize', 'difficulty', 'price']
     })
 );
+
+// # This will compression the response to a smaller size -->
+app.use(compression());
 
 // 8) Custom Timestamp Middleware
 app.use((req, res, next) => {
