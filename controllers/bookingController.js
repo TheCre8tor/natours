@@ -1,6 +1,7 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Tour = require('../models/tourModel');
 const Booking = require('../models/bookingModel');
+const User = require('../models/userModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appErrors');
 const factory = require('./handlerFactory');
@@ -52,7 +53,7 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
 
 const createBookingCheckout = async session => {
     const tour = session.client_reference_id;
-    const user = (await User.findOne({ email: session.customer_email })).id;
+    const user = (await User.findOne({ email: session.customer_email }))._id;
     const price = session.amount_total / 100;
     await Booking.create({ tour, user, price });
 };
@@ -68,7 +69,7 @@ exports.webhookCheckout = async (req, res, next) => {
     }
 
     if (event.type === 'checkout.session.completed') {
-        createBookingCheckout(event.data.object);
+        await createBookingCheckout(event.data.object);
     }
 
     res.status(200).json({ received: true });

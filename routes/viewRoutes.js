@@ -8,7 +8,6 @@ const {
     updateUserData,
     getMyTours
 } = require('./../controllers/viewsController');
-const { createBookingCheckout } = require('./../controllers/bookingController');
 const router = express.Router();
 
 router.get('/', isLoggedIn, getOverview);

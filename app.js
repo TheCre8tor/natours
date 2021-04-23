@@ -10,6 +10,7 @@ const csp = require('express-csp');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
+const bodyParser = require('body-parser');
 
 const AppError = require('./utils/appErrors');
 const globalErrorHandler = require('./controllers/errorController');
@@ -22,7 +23,7 @@ const { webhookCheckout } = require('./controllers/bookingController');
 
 const app = express();
 
-app.enable('trust proxy')
+app.enable('trust proxy');
 
 // Enabling PugJs View Engine -->
 app.set('view engine', 'pug');
@@ -165,11 +166,11 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-// NOTE --> 
+// NOTE -->
 /* We defined this route here and before the express.json middleware
- * because Stripe needs the body in a Raw form, basically as a Stream 
+ * because Stripe needs the body in a Raw form, basically as a Stream
  * and not in JSON format  */
-app.post('/webhook-checkout', express.raw({ type: 'application/json' }) ,webhookCheckout)
+app.post('/webhook-checkout', bodyParser.raw({ type: 'application/json' }), webhookCheckout);
 
 // 4) Body parser, reading data from body into req.body
 // <!-- The limit prevent data larger than 10kb -->
