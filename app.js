@@ -20,6 +20,7 @@ const bookingRouter = require('./routes/bookingRoutes');
 const viewRouter = require('./routes/viewRoutes');
 
 const app = express();
+app.enable('trust proxy')
 
 // Enabling PugJs View Engine -->
 app.set('view engine', 'pug');

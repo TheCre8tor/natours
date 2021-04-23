@@ -12,24 +12,15 @@ const signToken = id => {
     });
 };
 
-const sendCookie = (res, token) => {
-    const cookieOptions = {
+const createSendToken = (user, statusCode, req, res) => {
+    const token = signToken(user.id);
+    res.cookie('jwt', token, {
         // Hours: 24 | Minutes: 60 | Seconds: 60 | Milliseconds: 1000
         expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
         httpOnly: true,
         sameSite: 'none',
-        secure: true
-    };
-    if (process.env.NODE_ENV === 'production') {
-        // This option is going to be set only on production
-        cookieOptions.secure = true;
-    }
-    return res.cookie('jwt', token, cookieOptions);
-};
-
-const createSendToken = (user, statusCode, res) => {
-    const token = signToken(user.id);
-    sendCookie(res, token);
+        secure: req.secure || req.headers['x-forwarded-proto'] === 'https' 
+    });
 
     // Remove password from output
     user.password = undefined;
@@ -53,7 +44,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     /* We await so that it only move on to the next line
      * of code after the email as been sent! --> */
     await new Email(newUser, url).sendWelcome();
-    createSendToken(newUser, 201, res);
+    createSendToken(newUser, 201, req, res);
 });
 
 // Login Controller Logic -->
@@ -77,7 +68,7 @@ exports.login = catchAsync(async (req, res, next) => {
     // sendCookie(res, token);
 
     // 3) If everything is ok, send token to client
-    createSendToken(user, 200, res);
+    createSendToken(user, 200, req, res);
     // res.status(200).json({
     //     status: 'success',
     //     token: token
