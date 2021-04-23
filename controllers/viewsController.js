@@ -1,7 +1,8 @@
-const Tour = require('./../models/tourModel');
-const User = require('./../models/userModel');
-const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/appErrors');
+const Tour = require('../models/tourModel');
+const User = require('../models/userModel');
+const Booking = require('../models/bookingModel');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appErrors');
 
 // GET ALL TOURS DATA AND RENDERS OVERVIEW TEMPLATE -->
 exports.getOverview = catchAsync(async (req, res, next) => {
@@ -17,7 +18,10 @@ exports.getOverview = catchAsync(async (req, res, next) => {
 // GET TOUR DATA AND ALSO RENDER IT TEMPLATE -->
 exports.getTour = catchAsync(async (req, res, next) => {
     // Get the data, for the requested tour (including reviews and guides) -->
-    const tour = await Tour.findOne({ slug: req.params.slug }).populate({ path: 'reviews', fields: 'review rating user' });
+    const tour = await Tour.findOne({ slug: req.params.slug }).populate({
+        path: 'reviews',
+        fields: 'review rating user'
+    });
 
     if (!tour) {
         return next(new AppError('There is no tour with that name.', 404));
@@ -42,6 +46,21 @@ exports.getUserProfile = (req, res) => {
         title: 'user profile'
     });
 };
+
+exports.getMyTours = catchAsync(async (req, res, next) => {
+    // 1) Find all bookings
+    const bookings = await Booking.find({ user: req.user.id });
+
+    // 2) Find tours with the returned ID
+    // # Alternative for Virtual Populate -->
+    const tourIDs = bookings.map(element => element.tour);
+    const tours = await Tour.find({ _id: { $in: tourIDs } });
+
+    res.status(200).render('overview', {
+        title: 'My Tours',
+        tours: tours
+    });
+});
 
 // UPDATING DATA WITHOUT API -->
 exports.updateUserData = catchAsync(async (req, res, next) => {
