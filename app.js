@@ -18,8 +18,10 @@ const userRouter = require('./routes/userRoutes');
 const reviewRouter = require('./routes/reviewRoutes');
 const bookingRouter = require('./routes/bookingRoutes');
 const viewRouter = require('./routes/viewRoutes');
+const { webhookCheckout } = require('./controllers/bookingController');
 
 const app = express();
+
 app.enable('trust proxy')
 
 // Enabling PugJs View Engine -->
@@ -162,6 +164,12 @@ const limiter = rateLimit({
     message: 'Too many request from this IP, Please try again in an hour!'
 });
 app.use('/api', limiter);
+
+// NOTE --> 
+/* We defined this route here and before the express.json middleware
+ * because Stripe needs the body in a Raw form, basically as a Stream 
+ * and not in JSON format  */
+app.post('/webhook-checkout', express.raw({ type: 'application/json' }) ,webhookCheckout)
 
 // 4) Body parser, reading data from body into req.body
 // <!-- The limit prevent data larger than 10kb -->

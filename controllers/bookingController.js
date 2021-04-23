@@ -13,9 +13,10 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     const session = await stripe.checkout.sessions.create({
         // # Session -->
         payment_method_types: ['card'],
-        success_url: `${req.protocol}://${req.get('host')}/?tour=${req.params.tourId}&user=${req.user.id}&price=${
-            tour.price
-        }`,
+        // success_url: `${req.protocol}://${req.get('host')}/?tour=${req.params.tourId}&user=${req.user.id}&price=${
+        //     tour.price
+        // }`,
+        success_url: `${req.protocol}://${req.get('host')}/my-tours`,
         cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
         customer_email: req.user.email,
         client_reference_id: req.params.tourId,
@@ -39,15 +40,20 @@ exports.getCheckoutSession = catchAsync(async (req, res, next) => {
     });
 });
 
-exports.createBookingCheckout = catchAsync(async (req, res, next) => {
-    // This is only TEMPORARY, because it's NOT SECURE: everyone can make bookings without paying
-    const { tour, user, price } = req.query;
+// exports.createBookingCheckout = catchAsync(async (req, res, next) => {
+//     // This is only TEMPORARY, because it's NOT SECURE: everyone can make bookings without paying
+//     const { tour, user, price } = req.query;
 
-    if (!tour && !user && !price) return next();
-    await Booking.create({ tour, user, price });
+//     if (!tour && !user && !price) return next();
+//     await Booking.create({ tour, user, price });
 
-    res.redirect(req.originalUrl.split('?')[0]);
-});
+//     res.redirect(req.originalUrl.split('?')[0]);
+// }); 
+
+exports.webhookCheckout = (req, res, next) => {
+    const signature = req.header['stripe-signature'];
+    const event = stripe.webhooks.constructEvent(req.body, signature, )
+}
 
 exports.createBooking = factory.createOne(Booking);
 exports.getBooking = factory.getOne(Booking);
