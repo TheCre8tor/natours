@@ -170,7 +170,7 @@ app.use('/api', limiter);
 /* We defined this route here and before the express.json middleware
  * because Stripe needs the body in a Raw form, basically as a Stream
  * and not in JSON format  */
-app.post('/webhook-checkout', bodyParser.raw({ type: 'application/json' }), webhookCheckout);
+app.post('/webhook-checkout', express.raw({ type: 'application/json' }), webhookCheckout);
 
 // 4) Body parser, reading data from body into req.body
 // <!-- The limit prevent data larger than 10kb -->
