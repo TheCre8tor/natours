@@ -1,26 +1,30 @@
 const crypto = require('crypto');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
-const User = require('./../models/userModel');
-const catchAsync = require('./../utils/catchAsync');
-const AppError = require('./../utils/appErrors');
-const Email = require('./../utils/email');
+const User = require('../models/userModel');
+const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appErrors');
+const Email = require('../utils/email');
 
-const signToken = id => {
-    return jwt.sign({ id: id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRES_IN
+const signToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_IN,
+    });
+};
+
+const sendCookie = (req, res, token) => {
+    return res.cookie('jwt', token, {
+        // Hours: 24 | Minutes: 60 | Seconds: 60 | Milliseconds: 1000
+        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+        sameSite: 'none',
+        secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
     });
 };
 
 const createSendToken = (user, statusCode, req, res) => {
     const token = signToken(user.id);
-    res.cookie('jwt', token, {
-        // Hours: 24 | Minutes: 60 | Seconds: 60 | Milliseconds: 1000
-        expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000),
-        httpOnly: true,
-        sameSite: 'none',
-        secure: req.secure || req.headers['x-forwarded-proto'] === 'https' 
-    });
+    sendCookie(req, res, token);
 
     // Remove password from output
     user.password = undefined;
@@ -29,13 +33,13 @@ const createSendToken = (user, statusCode, req, res) => {
         status: 'success',
         token: token,
         data: {
-            user: user
-        }
+            user: user,
+        },
     });
 };
 
 // Signup Controller Logic -->
-exports.signup = catchAsync(async (req, res, next) => {
+exports.signup = catchAsync(async (req, res) => {
     const newUser = await User.create(req.body);
 
     // Sending a welcome email -->
@@ -80,10 +84,10 @@ exports.logout = (req, res) => {
     res.cookie('jwt', 'reset-previous-token-with-this', {
         expires: new Date(Date.now() + 5 * 1000),
         httpOnly: true,
-        secure: true
+        secure: true,
     });
     res.status(200).json({
-        status: 'success'
+        status: 'success',
     });
 };
 
@@ -120,7 +124,9 @@ exports.protect = catchAsync(async (req, res, next) => {
 
     // GRANT ACCESS TO PROTECTED ROUTE -->
     req.user = isUserInDB;
-    res.locals.currentUser = isUserInDB; // For RENDERED WEBSITE
+    /* With locals we have access to currentUser variable
+     * in all RENDERED WEBSITE template */
+    res.locals.currentUser = isUserInDB;
     next();
 });
 
@@ -186,7 +192,7 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
         res.status(200).json({
             status: 'success',
-            message: 'Token sent to email!'
+            message: 'Token sent to email!',
         });
     } catch (err) {
         user.passwordResetToken = undefined;
@@ -203,7 +209,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
     const user = await User.findOne({
         passwordResetToken: hashedToken,
-        passwordResetExpires: { $gt: Date.now() }
+        passwordResetExpires: { $gt: Date.now() },
     });
 
     // 2) If token has not expired, and there is user, set the new password
@@ -226,11 +232,11 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
 
     // 4) Log the user in, send JWT
     const token = signToken(user._id);
-    sendCookie(res, token);
+    sendCookie(req, res, token);
 
     res.status(200).json({
         status: 'success',
-        token: token
+        token: token,
     });
 });
 
@@ -253,10 +259,10 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 
     // 4) Log user in, send JWT
     const newToken = signToken(user._id);
-    sendCookie(res, newToken);
+    sendCookie(req, res, newToken);
 
     res.status(200).json({
         status: 'success',
-        token: newToken
+        token: newToken,
     });
 });

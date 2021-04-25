@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
 // <!-- Global Uncaught Exception | Error Handling -->
-process.on('uncaughtException', error => {
+process.on('uncaughtException', (error) => {
     console.log(`${error.name}: ${error.message.replace(' :', ',')}`);
     console.log('Uncaught Exception!, Shutting down...');
     process.exit(1);
@@ -20,9 +20,9 @@ mongoose
         useNewUrlParser: true,
         useCreateIndex: true,
         useFindAndModify: false,
-        useUnifiedTopology: true
+        useUnifiedTopology: true,
     })
-    .then(connection_datas => {
+    .then(() => {
         console.log('DB connected successfully...');
     });
 
@@ -33,7 +33,7 @@ const server = app.listen(port, () => {
 });
 
 // GLOBAL UNHANDLED REJECTION - ERROR HANDLING -->
-process.on('unhandledRejection', error => {
+process.on('unhandledRejection', (error) => {
     console.log(`${error.name}: ${error.message.replace(' :', ',')}`);
     console.log('Unhandeled Rejection!, Shutting down...');
     server.close(() => {

@@ -10,7 +10,6 @@ const csp = require('express-csp');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const compression = require('compression');
-const bodyParser = require('body-parser');
 
 const AppError = require('./utils/appErrors');
 const globalErrorHandler = require('./controllers/errorController');
@@ -90,7 +89,7 @@ csp.extend(app, {
                 'https://bundle.js:8828',
                 'ws://localhost:56558/',
                 'ws://127.0.0.1:*/',
-                'http://127.0.0.1:*/'
+                'http://127.0.0.1:*/',
             ],
             'worker-src': [
                 'self',
@@ -103,7 +102,7 @@ csp.extend(app, {
                 'https://bundle.js:*',
                 'ws://localhost:*/',
                 'ws://127.0.0.1:*/',
-                'http://127.0.0.1:*/'
+                'http://127.0.0.1:*/',
             ],
             'frame-src': [
                 'self',
@@ -116,7 +115,7 @@ csp.extend(app, {
                 'https://bundle.js:*',
                 'ws://localhost:*/',
                 'ws://127.0.0.1:*/',
-                'http://127.0.0.1:*/'
+                'http://127.0.0.1:*/',
             ],
             'img-src': [
                 'self',
@@ -129,7 +128,7 @@ csp.extend(app, {
                 'https://bundle.js:*',
                 'ws://localhost:*/',
                 'ws://127.0.0.1:*/',
-                'http://127.0.0.1:*/'
+                'http://127.0.0.1:*/',
             ],
             'connect-src': [
                 'self',
@@ -143,13 +142,13 @@ csp.extend(app, {
                 'https://bundle.js:*',
                 'ws://localhost:*/',
                 'ws://127.0.0.1:*/',
-                'http://127.0.0.1:*/'
-            ]
+                'http://127.0.0.1:*/',
+            ],
         },
         featurePolicy: {
-            'allow-list': ['*']
-        }
-    }
+            'allow-list': ['*'],
+        },
+    },
 });
 
 // 2) Development Lodging
@@ -162,7 +161,7 @@ if (process.env.NODE_ENV === 'development') {
 const limiter = rateLimit({
     max: 100,
     windowMs: 60 * 60 * 1000,
-    message: 'Too many request from this IP, Please try again in an hour!'
+    message: 'Too many request from this IP, Please try again in an hour!',
 });
 app.use('/api', limiter);
 
@@ -190,8 +189,8 @@ app.use(xss());
 // 7) Prevent Parameter Pollution
 app.use(
     hpp({
-        whitelist: ['duration', 'ratingsAverage', 'ratingsQuantity', 'maxGroupSize', 'difficulty', 'price']
-    })
+        whitelist: ['duration', 'ratingsAverage', 'ratingsQuantity', 'maxGroupSize', 'difficulty', 'price'],
+    }),
 );
 
 // # This will compression the response to a smaller size -->

@@ -2,10 +2,10 @@
     "singleQuote": true,
     "tabWidth": 4,
     "jsxBracketSameLine": true,
-    "arrowParens": "avoid",
+    "arrowParens": "always",
     "printWidth": 120,
     "endOfLine": "auto",
     "semi": true,
     "bracketSpacing": true,
-    "trailingComma": "none"
+    "trailingComma": "all"
 }

@@ -10,7 +10,7 @@ html(lang='en')
             title Natours | #{title}
             script(src='https://js.stripe.com/v3/')
 
-    body
+    body(data-alert=`${alert ? alert : ""}`)
         // HEADER
         include _header
 
@@ -24,4 +24,3 @@ html(lang='en')
         block bodyBottom
             script(src='/js/bundle.js')
             //- script(src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js')
-
