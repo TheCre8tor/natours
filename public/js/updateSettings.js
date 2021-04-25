@@ -3,13 +3,13 @@ import { showAlert } from './alert';
 import { logout } from './authenticate';
 
 // This function update either DATA or Password -->
-export const updateSettings = async (data, type) => {
+const updateSettings = async (data, type) => {
     try {
         const url = type === 'password' ? 'update-password' : 'update-profile';
         const res = await axios({
             method: 'PATCH',
             url: `/api/v1/users/${url}`,
-            data: data
+            data: data,
         });
 
         if (res.data.status === 'success') {
@@ -27,3 +27,5 @@ export const updateSettings = async (data, type) => {
         showAlert('error', err.response.data.message);
     }
 };
+
+export default updateSettings;

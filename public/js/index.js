@@ -1,7 +1,7 @@
 import '@babel/polyfill';
 import { login, logout } from './authenticate';
 import { displayMap } from './mapbox';
-import { updateSettings } from './updateSettings';
+import updateSettings from './updateSettings';
 import { bookTour } from './stripe';
 import { showAlert } from './alert';
 
